@@ -25,29 +25,28 @@ $data[] = 0;        // $data[7]은 빈도
 // 보조 기억 장치를 연다
 $word_freqs = touchopen('word_freqs', 'rb+');
 $f = fopen($argv[1], 'r');
-
-while (!feof($word_freqs)) {
+while (!feof($f)) {
     $data[1] = [fgets($f)];
-    
+    // if ($data[1][0][strlen($data[1][0])-1] != PHP_EOL) {
+    //     $data[1][0] = $data[1][0] . PHP_EOL;
+    // }
     $data[2] = null;
     $data[3] = 0;
 
     foreach (str_split($data[1][0]) as $c) {
         // $data[2]가 null 이고, 현재 $c가 문자나 숫자라면
-        if ($data[2] == null) {
-            if (preg_match('/[\dA-Za-z]/', $c)) {
+        if (is_null($data[2])) {
+            if (IntlChar::isalnum($c)) {
                 $data[2] = $data[3];
             }
         } else {
-            if (!preg_match('/[\dA-Za-z]/', $c)) {
+            if (!IntlChar::isalnum($c)) {
                 $data[4] = false;
                 $data[5] = strtolower(substr($data[1][0], $data[2], $data[3] - $data[2]));
 
                 if (strlen($data[5]) >= 2 && !strpos($data[0], $data[5])) {
                     while (!feof($word_freqs)) {
                         $data[6] = trim(fgets($word_freqs));
-                        // print_r($data[6]);
-                        
                         if ($data[6] == '') {
                             break;
                         }
@@ -66,7 +65,7 @@ while (!feof($word_freqs)) {
                         fseek($word_freqs, 0, SEEK_CUR);
                         fwrite($word_freqs, sprintf('%20s,%04d%s', $data[5], 1, PHP_EOL));
                     } else {
-                        fseek($word_freqs, -25, SEEK_CUR); // PHP는 PHP_EOL을 2byte로 인식
+                        fseek($word_freqs, -26, SEEK_CUR);
                         fwrite($word_freqs, sprintf('%20s,%04d%s', $data[5], $data[7], PHP_EOL));
                     }
                     fseek($word_freqs, 0, SEEK_SET);
@@ -81,8 +80,6 @@ while (!feof($word_freqs)) {
 fclose($f);
 fflush($word_freqs);
 
-print_r($word_freqs);
-
 $data = [];
 
 foreach (range(1, 25) as $i) {
@@ -91,8 +88,8 @@ foreach (range(1, 25) as $i) {
 $data[] = ''; // $data[25] 단어
 $data[] = 0;  // $data[26] 빈도수
 
-while (true) {
-    $data[25] = fgets($word_freqs);
+while (!feof($word_freqs)) {
+    $data[25] = trim(fgets($word_freqs));
     if ($data[25] == '') {
         break;
     }
