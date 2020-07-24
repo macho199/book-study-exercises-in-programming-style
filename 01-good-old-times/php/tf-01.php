@@ -36,11 +36,11 @@ while (!feof($f)) {
     foreach (str_split($data[1][0]) as $c) {
         // $data[2]가 null 이고, 현재 $c가 문자나 숫자라면
         if (is_null($data[2])) {
-            if (IntlChar::isalnum($c)) {
+            if (preg_match('/[\dA-Za-z]/', $c)) {
                 $data[2] = $data[3];
             }
         } else {
-            if (!IntlChar::isalnum($c)) {
+            if (!preg_match('/[\dA-Za-z]/', $c)) {
                 $data[4] = false;
                 $data[5] = strtolower(substr($data[1][0], $data[2], $data[3] - $data[2]));
 
@@ -65,7 +65,8 @@ while (!feof($f)) {
                         fseek($word_freqs, 0, SEEK_CUR);
                         fwrite($word_freqs, sprintf('%20s,%04d%s', $data[5], 1, PHP_EOL));
                     } else {
-                        fseek($word_freqs, -26, SEEK_CUR);
+                        // windows의 경우 -27
+                        fseek($word_freqs, strpos(strtolower($_SERVER['OS']), 'windows') !== false ? -27 : -26, SEEK_CUR);
                         fwrite($word_freqs, sprintf('%20s,%04d%s', $data[5], $data[7], PHP_EOL));
                     }
                     fseek($word_freqs, 0, SEEK_SET);
