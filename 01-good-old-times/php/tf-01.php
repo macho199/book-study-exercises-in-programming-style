@@ -66,7 +66,7 @@ while (!feof($f)) {
                         fwrite($word_freqs, sprintf('%20s,%04d%s', $data[5], 1, PHP_EOL));
                     } else {
                         // windows의 경우 -27
-                        fseek($word_freqs, strpos(strtolower($_SERVER['OS']), 'windows') !== false ? -27 : -26, SEEK_CUR);
+                        fseek($word_freqs, in_array(PHP_OS, ['WIN32', 'WINNT', 'Windows']) ? -27 : -26, SEEK_CUR);
                         fwrite($word_freqs, sprintf('%20s,%04d%s', $data[5], $data[7], PHP_EOL));
                     }
                     fseek($word_freqs, 0, SEEK_SET);
